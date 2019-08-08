@@ -118,9 +118,12 @@
     NSIndexPath * indexPath = [self.tableView indexPathForCell:cell];
     YjxCustomModel *model = self.dataSource[indexPath.row];
     model.isShowMore = !model.isShowMore;
+    [UIView setAnimationsEnabled:NO];
     [self.tableView beginUpdates];
     [self.tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
     [self.tableView endUpdates];
+    [UIView setAnimationsEnabled:YES];
+
 }
 
 @end
