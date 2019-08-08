@@ -28,6 +28,9 @@ NS_ASSUME_NONNULL_BEGIN
 //id
 @property(nonatomic, copy)NSString *idStr;
 
+@property (nonatomic, assign)BOOL isShowMore;
+
+
 @end
 
 NS_ASSUME_NONNULL_END

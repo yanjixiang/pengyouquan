@@ -26,16 +26,20 @@
     if (self) {
         
         
+        //折叠效果
+        self.isShowFoldBtn = YES;
+        
         [self.contentView addSubview:self.iconImg];
         [self.contentView addSubview:self.nameL];
         [self.contentView addSubview:self.timeL];
         [self.contentView addSubview:self.personalLibL];
         [self.contentView addSubview:self.textContentL];
+        [self.contentView addSubview:self.moreBtn];
         [self.contentView addSubview:self.collectView];
         [self.contentView addSubview:self.toolbar];
         [self.contentView addSubview:self.line];
-
-
+        
+        
         [self.iconImg mas_makeConstraints:^(MASConstraintMaker *make) {
             make.left.mas_equalTo(self.contentView.mas_left).mas_offset(10);
             make.top.mas_equalTo(self.contentView.mas_top).mas_offset(15);
@@ -68,11 +72,29 @@
             make.left.mas_equalTo(self.contentView.mas_left).mas_offset(10);
             make.right.mas_equalTo(self.contentView.mas_right).mas_offset(-10);
             make.top.mas_equalTo(self.iconImg.mas_bottom).mas_offset(15);
+            make.height.mas_equalTo(@1).priorityLow();//设置一个高度，以便赋值后更新
+            
         }];
+        
+        [self.moreBtn mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.left.mas_equalTo(self.contentView.mas_left).mas_offset(10);
+            //            make.right.mas_equalTo(self.contentView.mas_right).mas_offset(-10);
+            make.top.mas_equalTo(self.textContentL.mas_bottom).mas_offset(10);
+            make.height.mas_equalTo(@20.0);
+            make.width.mas_equalTo(@40.0);
+            
+            
+        }];
+        
         //设置子视图与父视图的约束，以便b子视图变化是能“撑”起父视图
         [self.collectView mas_makeConstraints:^(MASConstraintMaker *make) {
-            make.top.mas_equalTo(self.textContentL.mas_bottom).mas_offset(10);
-//            make.bottom.mas_equalTo(self.contentView.mas_bottom).offset(-10);
+            if (self.isShowFoldBtn==YES) {
+                make.top.mas_equalTo(self.moreBtn.mas_bottom).mas_offset(10);
+                
+            }else {
+                make.top.mas_equalTo(self.textContentL.mas_bottom).mas_offset(10);
+                
+            }
             make.width.mas_equalTo([UIScreen mainScreen].bounds.size.width);
             make.height.mas_equalTo(@1).priorityLow();//设置一个高度，以便赋值后更新
         }];
@@ -104,14 +126,16 @@
     //行距 字间距
     [_textContentL setColumnSpace:2.0];
     [_textContentL setRowSpace:10.0];
-    [self reloadCell:model.imageArr];
+    [self reloadCell:model.imageArr isShowMore:model.isShowMore];
+    
 }
 
-- (void)reloadCell:(NSArray *)imgarr{
+- (void)reloadCell:(NSArray *)imgarr isShowMore:(BOOL)isShowMore{
     //更新collectionView
     [self.collectView reloadData];
     [self.collectView layoutIfNeeded];
     [self.collectView setNeedsLayout];
+    
     CGFloat height_pading;
     CGFloat height_collectionview;
     if (imgarr.count > 0) {
@@ -122,10 +146,41 @@
         height_collectionview = 5;
     }
     [self.collectView mas_updateConstraints:^(MASConstraintMaker *make) {
-        make.top.mas_equalTo(self.textContentL.mas_bottom).mas_offset(height_pading);
-
         make.height.equalTo(@(height_collectionview));
     }];
+    
+    if ([self needLinesWithWidth:self.contentView.frame.size.width-20 currentLabel:_textContentL] > 3) {
+        
+        self.moreBtn.hidden = NO;
+        // 修改按钮的折叠打开状态
+        if (isShowMore) {
+            
+            self.textContentL.numberOfLines = 0;
+            [self.moreBtn setTitle:@"收起" forState:(UIControlStateNormal)];
+            
+        }else{
+            
+            self.textContentL.numberOfLines = 3;
+            [self.moreBtn setTitle:@"全文" forState:(UIControlStateNormal)];
+            
+        }
+    }else{
+        self.textContentL.numberOfLines = 0;
+        self.moreBtn.hidden = YES;
+        [self.collectView mas_updateConstraints:^(MASConstraintMaker *make) {
+            make.top.mas_equalTo(self.iconImg.mas_bottom).mas_offset(10);
+            make.height.equalTo(@(height_collectionview));
+        }];
+        
+    }
+    
+    
+}
+- (void)foldNewsOrNoTap:(UIButton *)recognizer{
+    
+    if (self.cellDelegate && [self.cellDelegate respondsToSelector:@selector(clickFoldLabel:)]) {
+        [self.cellDelegate clickFoldLabel:self];
+    }
 }
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
     
@@ -252,6 +307,18 @@
     }
     return _textContentL;
 }
+
+- (UIButton *)moreBtn {
+    if (!_moreBtn) {
+        _moreBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+        _moreBtn.titleLabel.font = [UIFont systemFontOfSize:15 weight:(UIFontWeightLight)];
+        _moreBtn.backgroundColor = [UIColor whiteColor];
+        [_moreBtn setTitleColor:[UIColor colorWithHexString:@"#1296db"] forState:(UIControlStateNormal)];
+        [_moreBtn addTarget:self action:@selector(foldNewsOrNoTap:) forControlEvents:(UIControlEventTouchUpInside)];
+        
+    }
+    return _moreBtn;
+}
 - (YjxToolBarView *)toolbar {
     if (!_toolbar) {
         _toolbar = [[YjxToolBarView alloc] init];
@@ -267,6 +334,7 @@
     }
     return _line;
 }
+
 //头像点击
 - (void)headerTapClick {
     NSString *idStr = _model.idStr;
@@ -279,6 +347,24 @@
 
 - (void)BtnRightClicked {
     NSLog(@"又点到我了---%@",_model.idStr);
-
+    
+}
+//获取文字所需行数
+- (NSInteger)needLinesWithWidth:(CGFloat)width currentLabel:(UILabel *)currentLabel {
+    UILabel *label = [[UILabel alloc] init];
+    label.font = currentLabel.font;
+    NSString *text = currentLabel.text;
+    NSInteger sum = 0;
+    //加上换行符
+    NSArray *rowType = [text componentsSeparatedByString:@"\n"];
+    for (NSString *currentText in rowType) {
+        label.text = currentText;
+        //获取需要的size
+        CGSize textSize = [label systemLayoutSizeFittingSize:CGSizeZero];
+        NSInteger lines = ceil(textSize.width/width);
+        lines = lines == 0 ? 1 : lines;
+        sum += lines;
+    }
+    return sum;
 }
 @end
