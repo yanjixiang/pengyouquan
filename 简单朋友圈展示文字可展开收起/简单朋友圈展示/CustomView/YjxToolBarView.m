@@ -75,10 +75,14 @@
 }
 //左侧按钮点击
 - (void)buttonLeftClick {
-    [self.btnDelegate BtnLeftClicked];
+    if ([self.btnDelegate respondsToSelector:@selector(BtnLeftClicked)]) {
+        [self.btnDelegate BtnLeftClicked];
+    }
 }
 //右侧按钮点击
 - (void)buttonRightClick{
-    [self.btnDelegate BtnRightClicked];
+    if ([self.btnDelegate respondsToSelector:@selector(BtnRightClicked)]) {
+        [self.btnDelegate BtnRightClicked];
+    }
 }
 @end

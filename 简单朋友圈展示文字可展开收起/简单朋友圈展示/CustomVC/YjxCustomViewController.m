@@ -34,6 +34,7 @@
     [self GetData];
 }
 - (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
     NSLog(@"--------000-----%f",self.tableView.frame.size.height);
     
 }
@@ -55,7 +56,7 @@
         model.nickname = @"我是昵称";
         model.timeStr = @"2019-09-08";
         model.personal = @"知名博主";
-        model.textContent = @"我是内容我是内容我是内容我是内容我是内容我是内容我是内容我是内容我是内容我是内容我是内容我是内容我是内容我是内容我是内容我是内容我是内容我是内容我是内容我是内容我是内容我是内容我是内容我是内容我是内容我是内容我是内容我是内容我是内容我222";
+        model.textContent = @"我是内容我是内容我是内容我是内容我是内容我是内容我是内容我是是内容我是内容我是内容我是内容我是";
         model.imageArr =  @[@"zhanweitu",@"zhanweitu",@"zhanweitu",@"zhanweitu",@"zhanweitu"];
         if ( i == 0) {
             model.textContent = @"";

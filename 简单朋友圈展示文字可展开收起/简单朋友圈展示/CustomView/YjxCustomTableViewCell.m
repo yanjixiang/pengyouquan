@@ -168,7 +168,7 @@
         self.textContentL.numberOfLines = 0;
         self.moreBtn.hidden = YES;
         [self.collectView mas_updateConstraints:^(MASConstraintMaker *make) {
-            make.top.mas_equalTo(self.iconImg.mas_bottom).mas_offset(10);
+            make.top.mas_equalTo(self.textContentL.mas_bottom).mas_offset(10);
             make.height.equalTo(@(height_collectionview));
         }];
         
